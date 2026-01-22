@@ -37,7 +37,7 @@ jobs:
           BACKUP_SCHEDULE: ${{ github.event.schedule || 'oneshot' }}
           MYSQL_HOST: ${{ vars.MYSQL_HOST }}
           MYSQL_PORT: ${{ vars.MYSQL_PORT }}
-          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_USER: ${{ vars.MYSQL_USER }}
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
           MYSQL_DATABASE: ${{ vars.MYSQL_DATABASE }}
           MYSQL_DUMP_OPTS: ${{ vars.MYSQL_DUMP_OPTS }}
