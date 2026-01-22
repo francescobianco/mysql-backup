@@ -16,6 +16,7 @@ jobs:
       matrix:
         environment:
           - "Medipav Inventario"
+          - "test 1"
     environment: ${{ matrix.environment }}
     steps:
       - name: Checkout
