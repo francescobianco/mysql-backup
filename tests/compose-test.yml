@@ -1,0 +1,47 @@
+services:
+  mysql:
+    image: mariadb:10.5
+    command: --sql-mode= --character-set-server=utf8 --collation-server=utf8_general_ci
+    environment:
+      - MARIADB_DATABASE=demo
+      - MARIADB_ROOT_PASSWORD=secret
+    volumes:
+      - mysql:/var/lib/mysql:rw
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mariadb", "-uroot", "-psecret", "-e", "SELECT 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backup:
+    image: alpine:latest
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      - BACKUP_NAME=docker-test
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=secret
+      - MYSQL_DATABASE=demo
+      - RCLONE_CONFIG=/rclone.conf
+      - RCLONE_DEST=local:/backups
+      - BACKUP_SCHEDULE=0 2 * * *
+      - BACKUP_RETENTION=7
+      - MYSQL_DUMP_OPTS=--single-transaction
+    volumes:
+      - ../backup.sh:/backup.sh:ro
+      - ./rclone-test.conf:/rclone.conf:ro
+      - ./backups:/backups
+    entrypoint: >
+      /bin/sh -c "
+      apk add --no-cache bash mariadb-client rclone;
+      chmod +x /backup.sh;
+      /backup.sh
+      "
+
+volumes:
+  mysql:

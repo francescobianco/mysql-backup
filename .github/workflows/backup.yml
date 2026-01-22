@@ -1,0 +1,47 @@
+name: Backup
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+    - cron: '0 2 * * *'
+    - cron: '0 3 * * 0'
+    - cron: '0 4 1 1 *'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        environment:
+          - production
+          - staging
+          # Aggiungi altri environment qui
+    environment: ${{ matrix.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install rclone
+        run: |
+          curl https://rclone.org/install.sh | sudo bash
+
+      - name: Configure rclone
+        run: |
+          mkdir -p ~/.config/rclone
+          echo "${{ secrets.RCLONE_CONFIG }}" > ~/.config/rclone/rclone.conf
+
+      - name: Run backup
+        env:
+          BACKUP_NAME: ${{ matrix.environment }}
+          BACKUP_SCHEDULE: ${{ github.event.schedule || 'oneshot' }}
+          MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
+          MYSQL_PORT: ${{ secrets.MYSQL_PORT }}
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          MYSQL_DUMP_OPTS: ${{ vars.MYSQL_DUMP_OPTS }}
+          RCLONE_DEST: ${{ vars.RCLONE_DEST }}
+          BACKUP_RETENTION: ${{ vars.BACKUP_RETENTION }}
+        run: bash backup.sh
