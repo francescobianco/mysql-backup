@@ -15,9 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         environment:
-          - production
-          - staging
-          # Aggiungi altri environment qui
+          - "Medipav Inventario"
     environment: ${{ matrix.environment }}
     steps:
       - name: Checkout
